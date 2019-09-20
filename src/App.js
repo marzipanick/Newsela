@@ -1,14 +1,29 @@
 import React from 'react'
 import './App.css'
 import questions from './quiz_questions.json'
+import FailList from './FailList'
+import SuccessList from './SuccessList'
 
 class App extends React.Component {
   constructor() {
     super()
     this.state = {
-      questions: questions,
       fail: [],
-      success: []
+      success: [],
+      sanitizedWords: [
+        'is',
+        'this',
+        'that',
+        'the',
+        'are',
+        'those',
+        'to',
+        'of',
+        'by',
+        'ii',
+        's',
+        'it'
+      ]
     }
     this.successFreqCount = this.successFreqCount.bind(this)
     this.poorFreqCount = this.poorFreqCount.bind(this)
@@ -16,7 +31,7 @@ class App extends React.Component {
 
   successFreqCount() {
     let successWords = []
-    this.state.questions.map(question => {
+    questions.map(question => {
       if (question.percent_correct > 0.5) {
         let sWords = question.text.toLowerCase().match(/\w+(?:'\w+)*/g)
         successWords.push(sWords.pop())
@@ -28,16 +43,18 @@ class App extends React.Component {
       if (successFreq[word]) successFreq[word]++
       else successFreq[word] = 1
     })
-    let sorted = Object.keys(successFreq).sort(
-      (a, b) => successFreq[b] - successFreq[a]
+
+    let parsed = Object.keys(successFreq).filter(
+      word =>
+        successFreq[word] > 10 && !this.state.sanitizedWords.includes(word)
     )
-    this.setState({ success: sorted.slice(0, 100) })
+    this.setState({ success: parsed })
   }
 
   poorFreqCount() {
     let poorWords = []
 
-    this.state.questions.map(question => {
+    questions.map(question => {
       if (question.percent_correct < 0.5) {
         let pWords = question.text.toLowerCase().match(/\w+(?:'\w+)*/g)
         poorWords.push(pWords.pop())
@@ -51,8 +68,10 @@ class App extends React.Component {
       else poorFreq[word] = 1
     })
 
-    let sorted = Object.keys(poorFreq).sort((a, b) => poorFreq[b] - poorFreq[a])
-    this.setState({ fail: sorted.slice(0, 100) })
+    let parsed = Object.keys(poorFreq).filter(
+      word => poorFreq[word] > 5 && !this.state.sanitizedWords.includes(word)
+    )
+    this.setState({ fail: parsed })
   }
 
   componentDidMount() {
@@ -66,16 +85,10 @@ class App extends React.Component {
         <h1>Frequency counter</h1>
         <div className="datalists">
           <div className="fail_list">
-            <h4>Fail words</h4>
-            {this.state.fail.map(
-              word => !this.state.success.includes(word) && <p>{word}</p>
-            )}
+            <FailList words={this.state.fail} success={this.state.success} />
           </div>
           <div className="success_list">
-            <h4>Success words</h4>
-            {this.state.success.map(
-              word => !this.state.fail.includes(word) && <p>{word}</p>
-            )}
+            <SuccessList words={this.state.success} fail={this.state.fail} />
           </div>
         </div>
       </div>
