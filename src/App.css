@@ -1,5 +1,36 @@
 .App {
   text-align: center;
+  color: white;
+  background-color: #282c34;
+  padding: 20px;
+}
+
+.datalists {
+  display: flex;
+  justify-content: space-around;
+  font-size: 1.5rem;
+}
+
+.success_list {
+  color: green;
+  border: 1px solid green;
+  padding: 20px;
+  width: 45%;
+}
+
+.success_list h4 {
+  text-decoration: underline;
+}
+
+.fail_list {
+  color: red;
+  border: 1px solid red;
+  padding: 20px;
+  width: 45%;
+}
+
+.fail_list h4 {
+  text-decoration: underline;
 }
 
 .App-logo {
