@@ -22,15 +22,20 @@
   text-decoration: underline;
 }
 
-.fail_list {
+.unsuccessful {
   color: red;
   border: 1px solid red;
   padding: 20px;
   width: 45%;
 }
 
-.fail_list h4 {
+.unsuccessful h4 {
   text-decoration: underline;
+}
+
+.wordlist {
+  display: flex;
+  justify-content: space-between;
 }
 
 .App-logo {

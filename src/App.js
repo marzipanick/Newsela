@@ -1,14 +1,14 @@
 import React from 'react'
 import './App.css'
 import questions from './quiz_questions.json'
-import FailList from './FailList'
+import Unsuccessful from './Unsuccessful'
 import SuccessList from './SuccessList'
 
 class App extends React.Component {
   constructor() {
     super()
     this.state = {
-      fail: [],
+      unsuccessful: [],
       success: [],
       sanitizedWords: [
         'is',
@@ -22,7 +22,10 @@ class App extends React.Component {
         'by',
         'ii',
         's',
-        'it'
+        'it',
+        'on',
+        'in',
+        'sentence'
       ]
     }
     this.successFreqCount = this.successFreqCount.bind(this)
@@ -31,29 +34,35 @@ class App extends React.Component {
 
   successFreqCount() {
     let successWords = []
+    //get an array of just the words in the questions students did well on
     questions.map(question => {
       if (question.percent_correct > 0.5) {
         let sWords = question.text.toLowerCase().match(/\w+(?:'\w+)*/g)
         successWords.push(sWords.pop())
       }
     })
-    let successFreq = {}
 
+    let successFreq = {}
+    //find frequency of each word
     successWords.map(word => {
       if (successFreq[word]) successFreq[word]++
       else successFreq[word] = 1
     })
-
-    let parsed = Object.keys(successFreq).filter(
-      word =>
-        successFreq[word] > 10 && !this.state.sanitizedWords.includes(word)
-    )
+    //get only the words that were used more than 5 times but do not include any sanitized words, sort by frequency descending
+    let parsed = Object.entries(successFreq)
+      .filter(
+        word =>
+          successFreq[word[0]] > 5 &&
+          !this.state.sanitizedWords.includes(word[0])
+      )
+      .sort((a, b) => b[1] - a[1])
+    //set the state of successful words to this array
     this.setState({ success: parsed })
   }
 
   poorFreqCount() {
     let poorWords = []
-
+    //get an array of just the words in the questions students did not do well on
     questions.map(question => {
       if (question.percent_correct < 0.5) {
         let pWords = question.text.toLowerCase().match(/\w+(?:'\w+)*/g)
@@ -62,19 +71,24 @@ class App extends React.Component {
     })
 
     let poorFreq = {}
-
+    //get the frequency each word was used
     poorWords.map(word => {
       if (poorFreq[word]) poorFreq[word]++
       else poorFreq[word] = 1
     })
-
-    let parsed = Object.keys(poorFreq).filter(
-      word => poorFreq[word] > 5 && !this.state.sanitizedWords.includes(word)
-    )
-    this.setState({ fail: parsed })
+    //grab only words used more than 5 times that are not sanitized, sort in descending frequency
+    let parsed = Object.entries(poorFreq)
+      .filter(
+        word =>
+          poorFreq[word[0]] > 5 && !this.state.sanitizedWords.includes(word[0])
+      )
+      .sort((a, b) => b[1] - a[1])
+    //set the state of unsuccessful words to this array
+    this.setState({ unsuccessful: parsed })
   }
 
   componentDidMount() {
+    //set the state with the above functions
     this.poorFreqCount()
     this.successFreqCount()
   }
@@ -84,11 +98,17 @@ class App extends React.Component {
       <div className="App">
         <h1>Frequency counter</h1>
         <div className="datalists">
-          <div className="fail_list">
-            <FailList words={this.state.fail} success={this.state.success} />
+          <div className="unsuccessful">
+            <Unsuccessful
+              words={this.state.unsuccessful}
+              success={this.state.success}
+            />
           </div>
           <div className="success_list">
-            <SuccessList words={this.state.success} fail={this.state.fail} />
+            <SuccessList
+              words={this.state.success}
+              unsuccessful={this.state.unsuccessful}
+            />
           </div>
         </div>
       </div>
